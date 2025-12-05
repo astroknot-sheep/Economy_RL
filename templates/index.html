@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economic Simulation</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #fafafa;
+            color: #222;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .controls {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .field input:focus {
+            outline: none;
+            border-color: #333;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+
+        .btn-run {
+            background: #222;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-run:hover {
+            background: #000;
+        }
+
+        .btn-run:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .btn-export {
+            background: #fff;
+            color: #222;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            display: none;
+        }
+
+        .btn-export:hover {
+            background: #f5f5f5;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .stat-unit {
+            font-size: 14px;
+            color: #666;
+            font-weight: normal;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .positive {
+            color: #16a34a;
+        }
+
+        .negative {
+            color: #dc2626;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .charts {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-box {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .chart-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 16px;
+        }
+
+        .chart-wrap {
+            height: 220px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty p {
+            font-size: 14px;
+        }
+
+        .loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #eee;
+            border-top-color: #222;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .status {
+            display: inline-block;
+            padding: 3px 10px;
+            font-size: 11px;
+            border-radius: 12px;
+            margin-left: 12px;
+        }
+
+        .status-ok {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-err {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        #results {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                Economic Simulation
+                <span class="status {{ 'status-ok' if ready else 'status-err' }}">
+                    {{ 'Ready' if ready else 'Offline' }}
+                </span>
+            </h1>
+            <p class="subtitle">Run multi-agent macroeconomic simulations with trained RL policies</p>
+        </header>
+
+        <div class="controls">
+            <form id="form">
+                <div class="controls-grid">
+                    <div class="field">
+                        <label>Duration (months)</label>
+                        <input type="number" name="duration" value="120" min="12" max="360">
+                    </div>
+                    <div class="field">
+                        <label>Households</label>
+                        <input type="number" name="households" value="100" min="20" max="500">
+                    </div>
+                    <div class="field">
+                        <label>Firms</label>
+                        <input type="number" name="firms" value="20" min="5" max="100">
+                    </div>
+                    <div class="field">
+                        <label>Banks</label>
+                        <input type="number" name="banks" value="3" min="1" max="10">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button type="submit" class="btn-run" {{ 'disabled' if not ready else '' }}>
+                        Run Simulation
+                    </button>
+                    <a href="/download" class="btn-export" id="exportBtn">Export CSV</a>
+                </div>
+            </form>
+        </div>
+
+        <div id="empty" class="empty">
+            <p>Configure parameters above and click "Run Simulation" to start.</p>
+        </div>
+
+        <div id="results">
+            <div class="stats" id="statsGrid"></div>
+            <div class="charts">
+                <div class="chart-box">
+                    <div class="chart-title">GDP</div>
+                    <div class="chart-wrap"><canvas id="chartGDP"></canvas></div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-title">Inflation (%)</div>
+                    <div class="chart-wrap"><canvas id="chartInflation"></canvas></div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-title">Unemployment (%)</div>
+                    <div class="chart-wrap"><canvas id="chartUnemp"></canvas></div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-title">Policy Rate (%)</div>
+                    <div class="chart-wrap"><canvas id="chartRate"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading" id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        const charts = {};
+
+        document.getElementById('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            document.getElementById('loader').style.display = 'flex';
+
+            try {
+                const res = await fetch('/run', {
+                    method: 'POST',
+                    body: new FormData(e.target)
+                });
+                const data = await res.json();
+
+                if (data.error) throw new Error(data.error);
+                showResults(data);
+
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        });
+
+        function showResults(data) {
+            document.getElementById('empty').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('exportBtn').style.display = 'inline-block';
+
+            const s = data.stats;
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat">
+                    <div class="stat-label">GDP</div>
+                    <div class="stat-value">${s.gdp.toLocaleString()}</div>
+                    <div class="stat-change ${s.gdp_pct >= 0 ? 'positive' : 'negative'}">
+                        ${s.gdp_pct >= 0 ? '+' : ''}${s.gdp_pct}% total change
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Inflation</div>
+                    <div class="stat-value">${s.inflation}<span class="stat-unit">%</span></div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Unemployment</div>
+                    <div class="stat-value">${s.unemployment}<span class="stat-unit">%</span></div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Policy Rate</div>
+                    <div class="stat-value">${s.rate}<span class="stat-unit">%</span></div>
+                </div>
+            `;
+
+            renderCharts(data.series);
+        }
+
+        function renderCharts(d) {
+            Object.values(charts).forEach(c => c.destroy());
+
+            const opts = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: {
+                        grid: { color: '#f0f0f0' },
+                        ticks: { font: { size: 11 } }
+                    }
+                },
+                elements: {
+                    point: { radius: 0 },
+                    line: { borderWidth: 1.5 }
+                }
+            };
+
+            charts.gdp = new Chart(document.getElementById('chartGDP'), {
+                type: 'line',
+                data: {
+                    labels: d.months,
+                    datasets: [{ data: d.gdp, borderColor: '#222', fill: false }]
+                },
+                options: opts
+            });
+
+            charts.infl = new Chart(document.getElementById('chartInflation'), {
+                type: 'line',
+                data: {
+                    labels: d.months,
+                    datasets: [{ data: d.inflation, borderColor: '#ea580c', fill: false }]
+                },
+                options: opts
+            });
+
+            charts.unemp = new Chart(document.getElementById('chartUnemp'), {
+                type: 'line',
+                data: {
+                    labels: d.months,
+                    datasets: [{ data: d.unemployment, borderColor: '#dc2626', fill: false }]
+                },
+                options: opts
+            });
+
+            charts.rate = new Chart(document.getElementById('chartRate'), {
+                type: 'line',
+                data: {
+                    labels: d.months,
+                    datasets: [{ data: d.rate, borderColor: '#2563eb', fill: false }]
+                },
+                options: opts
+            });
+        }
+    </script>
+</body>
+
+</html>

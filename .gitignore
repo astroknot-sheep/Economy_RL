@@ -1,0 +1,87 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+myenv/
+venv/
+env/
+ENV/
+.venv
+
+# PyTorch Model Checkpoints (LARGE FILES)
+# Ignore all checkpoints by default
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# BUT keep specific important checkpoints (exceptions)
+# Add ! to negate the ignore rule for specific files
+!checkpoints/run_20251204_174226/
+!checkpoints/run_20251204_174226/checkpoint_epoch_250.pt
+!checkpoints/run_20251205_153712/
+!checkpoints/run_20251205_153712/checkpoint_epoch_500.pt
+
+# Training Logs & Results
+logs/
+runs/
+validation_results.json
+*.log
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Environment variables
+.env
+.env.local
+
+# Data files (if you have large datasets)
+data/
+*.csv
+*.json
+*.pkl
+*.pickle
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
