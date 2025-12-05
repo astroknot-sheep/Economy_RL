@@ -108,7 +108,7 @@ Multi-agent RL is genuinely difficult:
 - Households: Maximize log(consumption) - labor disutility
 - Firms: Maximize profit - inventory costs
 
-## Structural Fixes (Dec 2024)
+## Structural Fixes (Dec 2025)
 
 I recently implemented 4 major fixes to improve realism:
 
