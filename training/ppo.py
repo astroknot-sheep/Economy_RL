@@ -31,9 +31,6 @@ class PPOConfig:
     n_epochs: int = 10
     batch_size: int = 64
     target_kl: Optional[float] = 0.02
-    
-    # Agent-specific entropy (CB needs more exploration)
-    cb_entropy_coef: float = 0.05  # Higher entropy for central bank
 
 
 class MultiAgentPPO:
@@ -283,18 +280,14 @@ class MultiAgentPPO:
                     # Value loss
                     value_loss = nn.functional.mse_loss(values, batch_returns)
                     
-                    # Entropy bonus - use higher entropy for central bank
-                    if agent_type == "central_bank":
-                        entropy_coef = self.config.cb_entropy_coef
-                    else:
-                        entropy_coef = self.config.entropy_coef
+                    # Entropy bonus
                     entropy_loss = -entropy.mean()
                     
                     # Total loss
                     loss = (
                         policy_loss
                         + self.config.value_loss_coef * value_loss
-                        + entropy_coef * entropy_loss
+                        + self.config.entropy_coef * entropy_loss
                     )
                     
                     # Backward

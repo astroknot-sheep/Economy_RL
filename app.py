@@ -12,8 +12,21 @@ from flask import Flask, render_template, request, jsonify, send_file
 
 app = Flask(__name__)
 
-# Model checkpoint path
-MODEL_PATH = "checkpoints/run_20251205_125911/best_model.pt"
+# Model checkpoint path - try multiple locations
+MODEL_PATHS = [
+    "checkpoints/run_20251206_021307/best_model.pt",
+    "checkpoints/run_20251205_125911/best_model.pt",
+    "checkpoints/best_model.pt",
+    "best_model.pt",
+]
+
+def find_model_path():
+    for path in MODEL_PATHS:
+        if os.path.exists(path):
+            return path
+    return None
+
+MODEL_PATH = find_model_path()
 
 # Store simulation results
 sim_result = {"df": None, "loaded": False}
@@ -34,7 +47,7 @@ def get_model(config):
     env = MacroEconEnvironment(config)
     ppo = MultiAgentPPO(agent_configs=env.get_agent_configs(), device="cpu")
     
-    if os.path.exists(MODEL_PATH):
+    if MODEL_PATH and os.path.exists(MODEL_PATH):
         ppo.load(MODEL_PATH)
         return ppo, True
     return ppo, False

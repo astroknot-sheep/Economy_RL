@@ -42,6 +42,10 @@ checkpoints/
 !checkpoints/run_20251205_153712/
 !checkpoints/run_20251205_153712/checkpoint_epoch_500.pt
 
+!checkpoints/run_20251206_021307/
+!checkpoints/run_20251206_021307/best_model.pt
+!checkpoints/run_20251206_021307/checkpoint_epoch_150.pt
+
 # Training Logs & Results
 logs/
 runs/

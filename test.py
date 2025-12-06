@@ -1709,7 +1709,7 @@ class UltimateModelValidator:
 
 def main():
     # HARDCODED MODEL PATH - Using OLD model with BALANCED settings
-    MODEL_PATH = "/Users/dhriman/Desktop/Personal Projects/Economy_RL/checkpoints/run_20251205_153712/checkpoint_epoch_250.pt"
+    MODEL_PATH = "/Users/dhriman/Desktop/Personal Projects/Economy_RL/checkpoints/run_20251206_021307/checkpoint_epoch_150.pt"
     
     parser = argparse.ArgumentParser(
         description="Ultimate single model validation system"
