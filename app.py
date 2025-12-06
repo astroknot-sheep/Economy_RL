@@ -14,8 +14,8 @@ app = Flask(__name__)
 
 # Model checkpoint path - try multiple locations
 MODEL_PATHS = [
+    "checkpoints/run_20251206_021307/checkpoint_epoch_150.pt",
     "checkpoints/run_20251206_021307/best_model.pt",
-    "checkpoints/run_20251205_125911/best_model.pt",
     "checkpoints/best_model.pt",
     "best_model.pt",
 ]
